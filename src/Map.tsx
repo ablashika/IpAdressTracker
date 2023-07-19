@@ -1,56 +1,58 @@
 import React,{useState, useEffect} from 'react'
 import { View, Text,StyleSheet,TextInput ,Button } from 'react-native'
 import MapView, { Marker } from 'react-native-maps';
-import axios from "axios"
+// import axios from "axios"
 
 export default function Map() {
-  const [location, setLocation] = useState<string>("");
+  const [ipAddress, setIpAddress] = useState<string>('');
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
+  const [city, setCity] = useState<string>('');
+  const [country, setCountry] = useState<string>('');
   
-
-
-
-
   const handleSearch = () => {
-    // Perform the search using the location entered by the user
-      fetchGeo();
+    fetchGeo();
   };
-  
-  // useEffect(() => {
-  //   fetchGeo();
-  // }, []);
+
 
   const fetchGeo = async (): Promise<void> => {
-
     try {
-      let apiKey = "at_i77OJ6Nt3n0ipZoEvfonck5RcC5h8"
-      let ipAdress = "154.160.21.49"
-      let response = await axios.get(`https://geo.ipify.org/api/v2/country,city? apiKey=${apiKey}&ip=${ipAdress}`)
-      console.log(response,"jj")
-      const { lat, lng } = response.data.location;
-      console.log(lat,lng)
-      console.log(response.data)
-      setLatitude(lat);
-      setLongitude(lng);
-     
+      let response = await fetch('https://ipapi.co/' + ipAddress + '/json/');
+      let jsonData = await response.json();
+  
+      console.log(jsonData);
+  
+      // Extract the required data
+      const { city, country, latitude, longitude } = jsonData;
+      setLatitude(parseFloat(latitude));
+      setLongitude(parseFloat(longitude));
+       setCity(city)
+       setCountry(country)
+      console.log(city, country);
 
-      
-        } catch (error) {
-            console.log('Error:', error);
-          }
+    } catch (error) {
+      console.log('Error:', error);
     }
+  };
+
+
+
   return (
     <View>
       <Text>Map</Text>
 
      <TextInput
+          value={ipAddress}
+          onChangeText={setIpAddress}
         // style={styles.input}
         placeholder="Enter a location"
-        value={location}
-        onChangeText={setLocation}
+      
       />
       <Button title="Search" onPress={handleSearch} /> 
+      <View>
+      <Text>IP Address: {ipAddress}</Text>
+        <Text>Location: {city},{country}</Text>
+      </View>
       {latitude !== 0 && longitude !== 0 && (
         <MapView
           style={styles.map}
@@ -63,6 +65,8 @@ export default function Map() {
         >
           <Marker coordinate={{ latitude, longitude }} />
         </MapView>
+
+        
       )}
     </View>
   )
@@ -77,9 +81,3 @@ const styles = StyleSheet.create({
       height:600
     },
   });
-
-
-
-
-
-
